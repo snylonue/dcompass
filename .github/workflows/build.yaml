@@ -3,6 +3,7 @@ on:
   push:
   schedule:
     - cron: '0 1 * * *'
+  workflow_dispatch:
 
 jobs:
   cachix:
@@ -27,7 +28,7 @@ jobs:
       - run: nix flake check -vL
 
   create-release:
-    if: (startsWith(github.event.head_commit.message, 'build:') || (github.event_name == 'schedule'))
+    if: (startsWith(github.event.head_commit.message, 'build:') || (github.event_name == 'workflow_dispatch'))
     name: Create release
     runs-on: ubuntu-latest
     outputs:
@@ -59,7 +60,7 @@ jobs:
 
   build-release:
     name: Build dcompass for ${{ matrix.target }}
-    if: ((startsWith(github.event.head_commit.message, 'build:') || (github.event_name == 'schedule'))) && (needs.create-release.outputs.log-num > 0)
+    if: ((startsWith(github.event.head_commit.message, 'build:') || (github.event_name == 'workflow_dispatch'))) && (needs.create-release.outputs.log-num > 0)
     needs: create-release
     strategy:
       fail-fast: false
@@ -286,7 +287,7 @@ jobs:
 
   remove-release:
     name: Clean up release(s)
-    if: (startsWith(github.event.head_commit.message, 'build:') || (github.event_name == 'schedule'))
+    if: (startsWith(github.event.head_commit.message, 'build:') || (github.event_name == 'workflow_dispatch'))
     needs: build-release
     runs-on: ubuntu-latest
     steps:
